@@ -75,3 +75,4 @@ public class Percolation {
             model.union(sInd, neigh);
     }
 }
+//some additional text for testing
