@@ -1,10 +1,11 @@
-package sedalgs.part_one.collpoints;
-//TODO delete package
 /**
  * Created by dsuhov on 03.06.2017.
  */
 
-import edu.princeton.cs.algs4.LinkedQueue;
+package sedalgs.part_one.collpoints;
+//TODO delete package and In-Out classes before submit
+
+import java.util.LinkedList;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
@@ -12,53 +13,53 @@ import edu.princeton.cs.algs4.StdOut;
 import java.util.Arrays;
 
 public class BruteCollinearPoints {
-    LinkedQueue<LineSegment> ls;
+
+    private final LineSegment[] lineSegments;
+
     public BruteCollinearPoints(Point[] points) {
 
-        ls = new LinkedQueue<>();
-        for (int a = 0; a < points.length - 3; a++) {
-            for (int b = a + 1; b < points.length - 2; b++) {
-                for (int c = b + 1; c < points.length - 1; c++) {
-                    for (int d = c + 1; d < points.length; d++) {
-                        if ( (points[a].slopeTo(points[b]) == points[a].slopeTo(points[c])) &&
-                                (points[a].slopeTo(points[c]) == points[a].slopeTo(points[d]))) {
-                            //System.err.println(points[a] + " " + points[b] + " " + points[c] + " " + points[d] );
-                            //System.err.println(points[a].slopeTo(points[b]) + " " + points[a].slopeTo(points[c]) + " " + points[a].slopeTo(points[d]) + "\n");
-                            Point[] points4 = new Point[4];
-                            Point min, max;
-                            points4[0] = points[a];
-                            points4[1] = points[b];
-                            points4[2] = points[c];
-                            points4[3] = points[d];
+        Point[] sortedPoints = points.clone();
 
-                            min = points4[0];
-                            max = points4[0];
-                            //если первый элемент массива больше любого из следующих, добавить его в min
-                            for (int i = 1; i < 4; i++) {
-                                if (min.compareTo(points4[i]) == 1) min = points4[i];
+        //sorting array of points make unnecessary  min-max arrangement in {@code for}
+        Arrays.sort(sortedPoints);
+        final int N = points.length;
+
+        // list will contain found segments
+        LinkedList<LineSegment> ls = new LinkedList<>();
+
+
+        for (int a = 0; a < N - 3; a++) {
+            Point APoint = sortedPoints[a];
+
+            for (int b = a + 1; b < N - 2; b++) {
+                Point BPoint = sortedPoints[b];
+                double slopeAB = APoint.slopeTo(BPoint);
+
+                for (int c = b + 1; c < N - 1; c++) {
+                    Point CPoint = sortedPoints[c];
+                    double slopeAC = APoint.slopeTo(CPoint);
+
+                    if (slopeAB == slopeAC) {
+                        for (int d = c + 1; d < N - 1; d++) {
+                            Point DPoint = sortedPoints[d];
+                            double slopeAD = APoint.slopeTo(DPoint);
+                            if (slopeAB == slopeAD) {
+                                ls.add(new LineSegment(APoint, DPoint));
                             }
-                            for (int i = 1; i < 4; i++) {
-                                if (max.compareTo(points4[i]) == -1) max = points4[i];
-                            }
-
-
-                            ls.enqueue(new LineSegment(min, max));
                         }
                     }
                 }
 
             }
         }
+        lineSegments = ls.toArray(new LineSegment[0]);
     }
-    public int numberOfSegments() { return ls.size(); }
+
+
+    public int numberOfSegments() { return lineSegments.length; }
 
     public LineSegment[] segments() {
-        int num = numberOfSegments();
-        LineSegment[] lss = new LineSegment[num];
-        for (int i = 0; i < num; i++) {
-            lss[i] = ls.dequeue();
-        }
-        return lss;
+        return lineSegments;
     }
 
     public static void main(String[] args) {
