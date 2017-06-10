@@ -1,7 +1,7 @@
 package sedalgs.part_one.puzzle8;
-import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.StdOut;
-import java.util.Arrays;
+//TODO delete pacjage before submit
+import edu.princeton.cs.algs4.LinkedQueue;
+import java.util.Iterator;
 
 /**
  * @author dsuhov
@@ -141,37 +141,52 @@ public class Board {
         return flag;
     }
 
-    public static void main(String[] args) {
-        System.out.println("Board building test.");
-        //Board board = new Board(new int[][] { {0,2,3}, {6,5,4}, {7,8,1}});
-        Board board = new Board(new int[][] { {1,2,3,4},{5,6,7,8},{9,10,11,12},{13,14,15,0}});
+    /**
+     *  all neighboring boards
+     * @return Iterable<Board>
+     */
+    public Iterable<Board> neighbors() {
+        int row = 0, col = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (this.blocks[i][j] == 0) {
+                    row = i;
+                    col = j;
+                }
+            }
+        }
+        return new Neighbors(row, col);
+    }
 
-        /*
-        System.out.println("Hamming test.");
-        board = new Board(new int[][] { {1,2,3}, {4,5,6}, {7,8,0}});
-        System.out.println("Input:\n" + board);
-        System.out.println("Should be 0: " + board.hamming());
-        board = new Board(new int[][] { {1,2,3}, {4,5,6}, {7,8,9}});
-        System.out.println("Input:\n" + board);
-        System.out.println("Should be 1: " + board.hamming());
-        board = new Board(new int[][] { {1,3,2}, {4,5,6}, {7,8,0}});
-        System.out.println("Input:\n" + board);
-        System.out.println("Should be 3: " + board.hamming());
+    private class Neighbors implements Iterable<Board> {
+        private final int PASS = 4;
+        LinkedQueue<Board> neighbors = new LinkedQueue<>();
 
-        System.out.println("Manhattan test.");
-        board = new Board(new int[][] { {1,2,3}, {4,5,6}, {7,8,0}});
-        System.out.println("Input:\n" + board);
-        System.out.println("Should be 0: " + board.manhattan() + "\n");
-        board = new Board(new int[][] { {1,2,0}, {4,5,7}, {8,6,3}});
-        System.out.println("Input:\n" + board);
-        System.out.println("Should be 8: " + board.manhattan() + "\n");
-        board = new Board(new int[][] { {1,3,2}, {4,8,6}, {7,5,0}});
-        System.out.println("Input:\n" + board);
-        System.out.println("Should be 4: " + board.manhattan() + "\n");
-        board = new Board(new int[][] { {8,7,6}, {5,4,3}, {2,0,1}});
-        System.out.println("Input:\n" + board);
-        System.out.println("Should be 16: " + board.manhattan() + "\n");
-        */
+        Neighbors(int zero_row, int zero_col) {
+            swap(zero_row, zero_col, zero_row-1, zero_col); //top-down
+            swap(zero_row, zero_col, zero_row, zero_col+1); //right-left
+            swap(zero_row, zero_col, zero_row, zero_col-1); //left-right
+            swap(zero_row, zero_col, zero_row+1, zero_col); //down-top
+        }
 
+        private void swap(int zero_row, int zero_col, int row, int col) {
+            if ((row >= 0 && col >= 0) && (row < n && col < n)) {
+                int[][] tempArr = new int[n][n];
+                boolean flag = true;
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < n; j++) {
+                        tempArr[i][j] = blocks[i][j];
+                    }
+                }
+                tempArr[zero_row][zero_col] = tempArr[row][col];
+                tempArr[row][col] = 0;
+                neighbors.enqueue(new Board(tempArr));
+            }
+        }
+
+        @Override
+        public Iterator<Board> iterator() {
+            return neighbors.iterator();
+        }
     }
 }
