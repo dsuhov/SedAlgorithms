@@ -1,5 +1,5 @@
 package sedalgs.part_one.puzzle8;
-//TODO delete pacjage before submit
+
 import edu.princeton.cs.algs4.LinkedQueue;
 import java.util.Iterator;
 
@@ -42,7 +42,7 @@ public class Board {
         int outOfPosition = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (blocks[i][j] != goal[i][j]) outOfPosition++;
+                if (blocks[i][j] != 0 && blocks[i][j] != goal[i][j]) outOfPosition++;
             }
         }
         return outOfPosition;
@@ -56,7 +56,7 @@ public class Board {
         int distances = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (blocks[i][j] != goal[i][j]) {
+                if (blocks[i][j] != 0 && blocks[i][j] != goal[i][j]) {
                     distances += manhDiff(i, j);
                 }
             }
@@ -76,19 +76,15 @@ public class Board {
     @Override
     public String toString() {
 
-        StringBuilder string = new StringBuilder();
-
-        string.append(n);
-        string.append("\n");
+        StringBuilder s = new StringBuilder();
+        s.append(n + "\n");
         for (int i = 0; i < n; i++) {
-            string.append(" ");
             for (int j = 0; j < n; j++) {
-                string.append(blocks[i][j]);
-                string.append(" ");
+                s.append(String.format("%2d ", blocks[i][j]));
             }
-            if (i != n) string.append("\n");
+            s.append("\n");
         }
-        return string.toString();
+        return s.toString();
     }
 
     private int manhDiff(int row, int col) {
@@ -188,5 +184,10 @@ public class Board {
         public Iterator<Board> iterator() {
             return neighbors.iterator();
         }
+    }
+
+    public static void main(String[] args) {
+        Board b = new Board(new int[][] { {5, 2, 3}, {4, 0, 6}, {7, 8, 1} });
+        System.out.println(b.hamming());
     }
 }
