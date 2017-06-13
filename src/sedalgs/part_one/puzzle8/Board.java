@@ -10,7 +10,6 @@ public class Board {
 
     final int n;
     final int[][] blocks;
-    final int[][] goal;
 
     /**
      * Funny constructor construct construction
@@ -18,17 +17,8 @@ public class Board {
      */
     public Board(int[][] blocks) {
         n = blocks.length;
-        int[][] blocksNew = new int[n][n];
-        int[][] blocksGoal = new int[n][n];
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++) {
-                blocksNew[i][j] = blocks[i][j];
-                blocksGoal[i][j] = (i*n) + j + 1;
-            };
-        blocksGoal[n-1][n-1] = 0;
+        this.blocks = blocks;
 
-        this.blocks = blocksNew;
-        this.goal = blocksGoal;
     }
 
     public int dimension() {
@@ -40,9 +30,14 @@ public class Board {
      */
     public int hamming() {
         int outOfPosition = 0;
+        int block = 0;
+
+        //if zero is out of place, some block will be on its place, so, count it
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (blocks[i][j] != 0 && blocks[i][j] != goal[i][j]) outOfPosition++;
+            for (int j = 0; j < ((i == n-1) ? n-1 : n); j++) {
+                if (blocks[i][j] != ++block) {
+                    outOfPosition++;
+                }
             }
         }
         return outOfPosition;
@@ -54,20 +49,33 @@ public class Board {
      */
     public int manhattan() {
         int distances = 0;
+        int block = 0;
+        int row, col;
+
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (blocks[i][j] != 0 && blocks[i][j] != goal[i][j]) {
-                    distances += manhDiff(i, j);
+            for (int j = 0; j < ((i == n-1) ? n-1 : n); j++) {
+                if (blocks[i][j] != ++block && blocks[i][j] != 0) {
+                    row = (blocks[i][j] - 1)/n;
+                    col = (blocks[i][j] - 1)%n;
+                    distances += (row > i ? row - i : i - row) + (col > j ? col - j : j - col);
                 }
             }
+        }
+        if (blocks[n-1][n-1] != 0) {
+            row = (blocks[n-1][n-1] - 1)/n;
+            col = (blocks[n-1][n-1] - 1)%n;
+            distances += 2*(n-1) - row - col;
         }
         return distances;
     }
 
     public boolean isGoal() {
+        int block = 0;
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (blocks[i][j] != goal[i][j]) return false;
+            for (int j = 0; j < ((i == n-1) ? n-1 : n); j++) {
+                if (blocks[i][j] != ++block) {
+                    return false;
+                }
             }
         }
         return true;
@@ -87,54 +95,57 @@ public class Board {
         return s.toString();
     }
 
-    private int manhDiff(int row, int col) {
-        int block = blocks[row][col];
-        boolean flag = false;
-        int diff = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (block == goal[i][j]) {
-                    diff = Math.abs(row - i) + Math.abs(col - j);
-                    flag = true;
-                    break;
-                }
-            }
-            if (flag) break;
-        }
-        return diff;
-    }
-
     /**
      * a board that is obtained by exchanging any pair of blocks
      * @return Board
      */
     public Board twin() {
+
         int[][] newBoard = new int[n][n];
+        int[] blockForSwap = new int[2];
+        boolean check = false;
+        // create and fill new board
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 newBoard[i][j] = blocks[i][j];
             }
         }
-        int temp;
-        temp = newBoard[0][0];
-        newBoard[0][0] = newBoard[0][1];
-        newBoard[0][1] = temp;
+
+        // make interchange
+        outer:
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (newBoard[i][j] != 0 && check == false) {
+                    blockForSwap[0] = i;
+                    blockForSwap[1] = j;
+                    check = true;
+                } else if (newBoard[i][j] != 0 && check == true) {
+                    int block = newBoard[blockForSwap[0]][blockForSwap[1]];
+                    newBoard[blockForSwap[0]][blockForSwap[1]] = newBoard[i][j];
+                    newBoard[i][j] = block;
+                    break outer;
+                }
+            }
+        }
 
         return new Board(newBoard);
     }
+
 
     public boolean equals(Object y) {
         if (this == y) return true;
         Board otherBoard = (Board) y;
         if (this.n != otherBoard.dimension()) return false;
 
-        boolean flag = true;
+        int block = 0;
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (this.blocks[i][j] != otherBoard.blocks[i][j]) flag = false;
+            for (int j = 0; j < ((i == n-1) ? n-1 : n); j++) {
+                if (blocks[i][j] != otherBoard.blocks[i][j]) {
+                    return false;
+                }
             }
         }
-        return flag;
+        return true;
     }
 
     /**
@@ -143,19 +154,19 @@ public class Board {
      */
     public Iterable<Board> neighbors() {
         int row = 0, col = 0;
+
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (this.blocks[i][j] == 0) {
-                    row = i;
-                    col = j;
+                    return new Neighbors(i, j);
                 }
             }
         }
-        return new Neighbors(row, col);
+        return new Neighbors(n-1, n-1);
     }
 
     private class Neighbors implements Iterable<Board> {
-        private final int PASS = 4;
+
         LinkedQueue<Board> neighbors = new LinkedQueue<>();
 
         Neighbors(int zero_row, int zero_col) {
@@ -168,7 +179,7 @@ public class Board {
         private void swap(int zero_row, int zero_col, int row, int col) {
             if ((row >= 0 && col >= 0) && (row < n && col < n)) {
                 int[][] tempArr = new int[n][n];
-                boolean flag = true;
+
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < n; j++) {
                         tempArr[i][j] = blocks[i][j];
@@ -187,7 +198,10 @@ public class Board {
     }
 
     public static void main(String[] args) {
-        Board b = new Board(new int[][] { {5, 2, 3}, {4, 0, 6}, {7, 8, 1} });
-        System.out.println(b.hamming());
+        Board b = new Board(new int[][] { {1, 2, 3}, {4, 5, 6}, {7, 8, 0} });
+        //System.out.println(b.twin());
+        for (Board board : b.neighbors()) {
+            System.out.println(board);
+        }
     }
 }
