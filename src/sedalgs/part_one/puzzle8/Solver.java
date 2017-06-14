@@ -1,9 +1,7 @@
 package sedalgs.part_one.puzzle8;
 
-import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.LinkedStack;
 import edu.princeton.cs.algs4.MinPQ;
-import edu.princeton.cs.algs4.StdOut;
 
 import java.util.Iterator;
 
@@ -28,7 +26,6 @@ public class Solver {
 
         while (isSolvable == 0) {
             if (!(candidate = gameTree.delMin()).isSolved()) {
-                //System.out.println(candidate.board +""+ candidate.moves + " " + candidate.board.manhattan());
                 previous = candidate.previousSN;
                 if (previous == null) {
                     for (Board board : candidate.board.neighbors()) { gameTree.insert(new SearchNode(board, candidate.moves + 1, candidate)); }
@@ -61,7 +58,6 @@ public class Solver {
 
     // is the initial board solvable?
     public boolean isSolvable() {
-        if (isSolvable == 0) throw new IllegalArgumentException("Something went wrong!");
         return isSolvable == 1;
     }
 
@@ -91,7 +87,7 @@ public class Solver {
         public int compareTo(SearchNode o) {
             int thisPriority = pf();
             int oPriority = o.pf();
-            if (thisPriority > oPriority) return +1;
+            if (thisPriority > oPriority) return 1;
             else if (thisPriority == oPriority) return 0;
             return -1;
         }
@@ -111,7 +107,7 @@ public class Solver {
         Solution(SearchNode node) {
             boards = new LinkedStack<>();
             this.moves = node.moves;
-            while (node.previousSN.previousSN != null) {
+            while (node != null) {
                 boards.push(node.board);
                 node = node.previousSN;
             }
@@ -121,31 +117,6 @@ public class Solver {
         @Override
         public Iterator<Board> iterator() {
             return boards.iterator();
-        }
-    }
-
-    public static void main(String[] args) {
-
-        // create initial board from file
-        In in = new In(args[0]);
-        int n = in.readInt();
-        int[][] blocks = new int[n][n];
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                blocks[i][j] = in.readInt();
-
-        Board initial = new Board(blocks);
-
-        // solve the puzzle
-        Solver solver = new Solver(initial);
-
-        // print solution to standard output
-        if (!solver.isSolvable())
-            StdOut.println("No solution possible");
-        else {
-            StdOut.println("Minimum number of moves = " + solver.moves());
-            for (Board board : solver.solution())
-                StdOut.println(board);
         }
     }
 

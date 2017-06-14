@@ -142,6 +142,9 @@ public class Board {
     public boolean equals(Object y) {
         if (y == null) return false;
         if (this == y) return true;
+        if (!(y instanceof Board)) {
+            return false;
+        }
         Board otherBoard = (Board) y;
         if (this.n != otherBoard.dimension()) return false;
 
@@ -178,10 +181,10 @@ public class Board {
         LinkedQueue<Board> neighbors = new LinkedQueue<>();
 
         Neighbors(int zero_row, int zero_col) {
-            swap(zero_row, zero_col, zero_row-1, zero_col); //top-down
-            swap(zero_row, zero_col, zero_row, zero_col+1); //right-left
-            swap(zero_row, zero_col, zero_row, zero_col-1); //left-right
-            swap(zero_row, zero_col, zero_row+1, zero_col); //down-top
+            swap(zero_row, zero_col, zero_row-1, zero_col); // top-down
+            swap(zero_row, zero_col, zero_row, zero_col+1); // right-left
+            swap(zero_row, zero_col, zero_row, zero_col-1); // left-right
+            swap(zero_row, zero_col, zero_row+1, zero_col); // down-top
         }
 
         private void swap(int zero_row, int zero_col, int row, int col) {
