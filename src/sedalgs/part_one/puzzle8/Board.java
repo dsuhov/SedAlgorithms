@@ -8,8 +8,8 @@ import java.util.Iterator;
  */
 public class Board {
 
-    final int n;
-    final int[][] blocks;
+    private final int n;
+    private final int[][] blocks;
 
     /**
      * Funny constructor construct construction
@@ -17,7 +17,14 @@ public class Board {
      */
     public Board(int[][] blocks) {
         n = blocks.length;
-        this.blocks = blocks;
+
+        int[][] newBoard = new int[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                newBoard[i][j] = blocks[i][j];
+            }
+        }
+        this.blocks = newBoard;
 
     }
 
@@ -133,6 +140,7 @@ public class Board {
 
 
     public boolean equals(Object y) {
+        if (y == null) return false;
         if (this == y) return true;
         Board otherBoard = (Board) y;
         if (this.n != otherBoard.dimension()) return false;
@@ -194,14 +202,6 @@ public class Board {
         @Override
         public Iterator<Board> iterator() {
             return neighbors.iterator();
-        }
-    }
-
-    public static void main(String[] args) {
-        Board b = new Board(new int[][] { {1, 2, 3}, {4, 5, 6}, {7, 8, 0} });
-        //System.out.println(b.twin());
-        for (Board board : b.neighbors()) {
-            System.out.println(board);
         }
     }
 }

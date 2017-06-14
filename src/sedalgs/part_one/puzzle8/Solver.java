@@ -1,14 +1,15 @@
 package sedalgs.part_one.puzzle8;
 
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.LinkedStack;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.Iterator;
 
 public class Solver {
-    int isSolvable = 0;
-    Solution solution;
+    private int isSolvable = 0;
+    private Solution solution;
 
 
     // find a solution to the initial board (using the A* algorithm)
@@ -27,6 +28,7 @@ public class Solver {
 
         while (isSolvable == 0) {
             if (!(candidate = gameTree.delMin()).isSolved()) {
+                //System.out.println(candidate.board +""+ candidate.moves + " " + candidate.board.manhattan());
                 previous = candidate.previousSN;
                 if (previous == null) {
                     for (Board board : candidate.board.neighbors()) { gameTree.insert(new SearchNode(board, candidate.moves + 1, candidate)); }
@@ -104,29 +106,21 @@ public class Solver {
     }
 
     private class Solution implements Iterable<Board> {
-        SearchNode solution;
-        Solution(SearchNode solution) {
-            this.solution = solution;
+        LinkedStack<Board> boards;
+        int moves;
+        Solution(SearchNode node) {
+            boards = new LinkedStack<>();
+            this.moves = node.moves;
+            while (node.previousSN.previousSN != null) {
+                boards.push(node.board);
+                node = node.previousSN;
+            }
         }
-        int getMoves() {return solution.moves;}
+        int getMoves() {return moves;}
 
         @Override
         public Iterator<Board> iterator() {
-            return new Iterator<Board>() {
-                SearchNode current = solution;
-
-                @Override
-                public boolean hasNext() {
-                    return current.previousSN != null;
-                }
-
-                @Override
-                public Board next() {
-                    Board b = current.board;
-                    current = current.previousSN;
-                    return b;
-                }
-            };
+            return boards.iterator();
         }
     }
 
@@ -139,6 +133,7 @@ public class Solver {
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
                 blocks[i][j] = in.readInt();
+
         Board initial = new Board(blocks);
 
         // solve the puzzle
